@@ -71,7 +71,8 @@ jobs:
           APKSIGNER=$(ls -d "$ANDROID_SDK_ROOT"/build-tools/*/apksigner | sort -V | tail -1)
           APK=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
           echo "apk = $APK"
-          "$APKSIGNER" verify --verbose --print-certs "$APK"
+          # minSdk=24 时 apksigner 默认跳过 v1 校验，这里显式降低校验基准以验证 v1+v2+v3
+          "$APKSIGNER" verify --verbose --print-certs --min-sdk-version 21 "$APK"
 
       - name: Collect APKs
         run: |
