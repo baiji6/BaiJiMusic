@@ -48,6 +48,8 @@ jobs:
           if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PROPERTIES" ]; then
             printf '%s' "$KEYSTORE_BASE64" | base64 -d > release.jks
             printf '%s\n' "$KEYSTORE_PROPERTIES" > keystore.properties
+            # app/build.gradle 中的 file() 相对 app 模块解析，storeFile 必须写成绝对路径
+            sed -i "s|^storeFile=.*|storeFile=$PWD/release.jks|" keystore.properties
             echo "已写入正式签名配置:"
             sed -E 's/^(storePassword|keyPassword)=.*/\1=***/' keystore.properties
           else
