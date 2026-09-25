@@ -39,6 +39,21 @@ jobs:
             "ndk;27.2.12479018" \
             "cmake;3.22.1"
 
+      # 正式签名密钥通过仓库 Secrets 注入，密钥库本身不入库。
+      - name: Decode release signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PROPERTIES: ${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PROPERTIES" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 -d > release.jks
+            printf '%s\n' "$KEYSTORE_PROPERTIES" > keystore.properties
+            echo "已写入正式签名配置:"
+            sed -E 's/^(storePassword|keyPassword)=.*/\1=***/' keystore.properties
+          else
+            echo "未配置 ANDROID_KEYSTORE_* Secret，release 将回退到 debug 签名"
+          fi
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
@@ -47,6 +62,14 @@ jobs:
 
       - name: Build Release APK
         run: ./gradlew :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Verify release APK signature
+        run: |
+          set -e
+          APKSIGNER=$(ls -d "$ANDROID_SDK_ROOT"/build-tools/*/apksigner | sort -V | tail -1)
+          APK=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
+          echo "apk = $APK"
+          "$APKSIGNER" verify --verbose --print-certs "$APK"
 
       - name: Collect APKs
         run: |
@@ -61,9 +84,11 @@ jobs:
           path: artifacts/*.apk
           if-no-files-found: error
 
-      - name: Attach APK to Release
+      - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*.apk
+          name: 白姬音乐 ${{ github.ref_name }}
+          files: artifacts/app-release.apk
+          draft: false
           generate_release_notes: true
