@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">白姬音乐</string>
+    <string name="nav_search">搜索</string>
+    <string name="nav_my">我的</string>
+    <string name="nav_settings">设置</string>
+    <string name="search_hint">搜索歌曲、歌手、专辑</string>
+    <string name="search">搜索</string>
+    <string name="download">下载</string>
+    <string name="login">登录</string>
+    <string name="logout">退出登录</string>
+    <string name="quality">音质</string>
+    <string name="playback_quality">默认播放音质</string>
+    <string name="download_location">下载位置</string>
+    <string name="change_location">更改位置</string>
+    <string name="online_playback">在线播放</string>
+</resources>

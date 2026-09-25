@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="12dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/textPlaylistName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="歌单名"
+        android:textSize="16sp"
+        android:textColor="@color/text_primary"
+        android:ellipsize="end"
+        android:maxLines="1" />
+
+    <TextView
+        android:id="@+id/textPlaylistCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0 首"
+        android:textSize="13sp"
+        android:textColor="@color/text_secondary" />
+
+    <ImageButton
+        android:id="@+id/btnDeletePlaylist"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_delete"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="删除歌单" />
+
+</LinearLayout>

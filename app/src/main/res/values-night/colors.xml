@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#FF4C8DFF</color>
+    <color name="primary_dark">#FF2E6BE6</color>
+    <color name="accent">#FF4C8DFF</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="text_primary">#FFE6E8EB</color>
+    <color name="text_secondary">#FF9AA0A6</color>
+    <color name="bg">#FF121417</color>
+    <color name="surface">#FF1D2024</color>
+    <color name="divider">#FF2E3135</color>
+    <color name="chip_bg">#FF2A3A5C</color>
+</resources>
