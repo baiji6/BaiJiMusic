@@ -6,11 +6,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.baiji.music.App
 import com.baiji.music.data.HistoryStore
 import com.baiji.music.data.PlaylistStore
 import com.baiji.music.databinding.ActivityPlaylistBinding
+import com.baiji.music.network.MusicApi
 import com.baiji.music.network.Song
+import com.baiji.music.network.Source
 import com.baiji.music.player.PlayerController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,15 +46,19 @@ class PlaylistActivity : AppCompatActivity() {
     }
 
     private fun playInline(song: Song) {
-        if (!App.api.isLoggedIn()) {
-            Toast.makeText(this, "请先登录 QQ 音乐", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this, LoginActivity::class.java))
+        if (!MusicApi.isLoggedIn(song.source)) {
+            Toast.makeText(this, "请先登录后再播放", Toast.LENGTH_SHORT).show()
+            if (song.source != Source.NETEASE) startActivity(Intent(this, LoginActivity::class.java))
             return
         }
         lifecycleScope.launch {
             val url = try {
                 withContext(Dispatchers.IO) {
-                    App.api.song.getPlayUrl(song.mid, PlayerController.currentQuality)
+                    MusicApi.playUrl(
+                        song,
+                        PlayerController.currentQuality,
+                        PlayerController.currentNeteaseQuality,
+                    )
                 }
             } catch (e: Exception) {
                 null
@@ -105,15 +110,17 @@ class PlaylistActivity : AppCompatActivity() {
     }
 
     private fun onDownload(song: Song) {
-        if (!App.api.isLoggedIn()) {
-            Toast.makeText(this, "下载前请先登录 QQ 音乐", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this, LoginActivity::class.java))
+        if (!MusicApi.isLoggedIn(song.source)) {
+            Toast.makeText(this, "下载前请先登录", Toast.LENGTH_SHORT).show()
+            if (song.source != Source.NETEASE) startActivity(Intent(this, LoginActivity::class.java))
             return
         }
         val intent = Intent(this, DownloadActivity::class.java)
         intent.putExtra("song_mid", song.mid)
+        intent.putExtra("song_id", song.songId)
         intent.putExtra("song_name", song.name)
         intent.putExtra("song_singer", song.singer)
+        intent.putExtra("song_source", song.source)
         startActivity(intent)
     }
 

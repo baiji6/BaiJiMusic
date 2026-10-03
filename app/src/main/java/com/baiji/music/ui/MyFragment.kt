@@ -81,15 +81,21 @@ class MyFragment : Fragment() {
     }
 
     private fun playInline(song: com.baiji.music.network.Song) {
-        if (!App.api.isLoggedIn()) {
-            Toast.makeText(requireContext(), "请先登录 QQ 音乐", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(requireContext(), LoginActivity::class.java))
+        if (!com.baiji.music.network.MusicApi.isLoggedIn(song.source)) {
+            Toast.makeText(requireContext(), "请先登录后再播放", Toast.LENGTH_SHORT).show()
+            if (song.source != com.baiji.music.network.Source.NETEASE) {
+                startActivity(Intent(requireContext(), LoginActivity::class.java))
+            }
             return
         }
         viewLifecycleOwner.lifecycleScope.launch {
             val url = try {
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                    App.api.song.getPlayUrl(song.mid, PlayerController.currentQuality)
+                    com.baiji.music.network.MusicApi.playUrl(
+                        song,
+                        PlayerController.currentQuality,
+                        PlayerController.currentNeteaseQuality,
+                    )
                 }
             } catch (e: Exception) {
                 null
@@ -114,15 +120,19 @@ class MyFragment : Fragment() {
     }
 
     private fun onDownload(song: com.baiji.music.network.Song) {
-        if (!App.api.isLoggedIn()) {
-            Toast.makeText(requireContext(), "下载前请先登录 QQ 音乐", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(requireContext(), LoginActivity::class.java))
+        if (!com.baiji.music.network.MusicApi.isLoggedIn(song.source)) {
+            Toast.makeText(requireContext(), "下载前请先登录", Toast.LENGTH_SHORT).show()
+            if (song.source != com.baiji.music.network.Source.NETEASE) {
+                startActivity(Intent(requireContext(), LoginActivity::class.java))
+            }
             return
         }
         val intent = Intent(requireContext(), DownloadActivity::class.java)
         intent.putExtra("song_mid", song.mid)
+        intent.putExtra("song_id", song.songId)
         intent.putExtra("song_name", song.name)
         intent.putExtra("song_singer", song.singer)
+        intent.putExtra("song_source", song.source)
         startActivity(intent)
     }
 

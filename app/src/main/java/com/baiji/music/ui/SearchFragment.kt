@@ -10,11 +10,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.baiji.music.App
 import com.baiji.music.R
 import com.baiji.music.data.HistoryStore
 import com.baiji.music.databinding.FragmentSearchBinding
+import com.baiji.music.network.MusicApi
 import com.baiji.music.network.Song
+import com.baiji.music.network.Source
 import com.baiji.music.player.PlayerController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,6 +25,12 @@ class SearchFragment : Fragment() {
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
     private lateinit var adapter: SongAdapter
+
+    /** 当前搜索音源：qq / netease */
+    private var source: String = Source.QQ
+
+    private val sourcePrefs get() =
+        requireContext().getSharedPreferences("search_prefs", android.content.Context.MODE_PRIVATE)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -58,6 +65,16 @@ class SearchFragment : Fragment() {
             Toast.makeText(requireContext(), "搜索历史已清空", Toast.LENGTH_SHORT).show()
         }
 
+        // 音源切换（记忆上次选择）
+        source = sourcePrefs.getString("source", Source.QQ) ?: Source.QQ
+        binding.sourceGroup.check(
+            if (source == Source.NETEASE) R.id.radioNetease else R.id.radioQQ
+        )
+        binding.sourceGroup.setOnCheckedChangeListener { _, checkedId ->
+            source = if (checkedId == R.id.radioNetease) Source.NETEASE else Source.QQ
+            sourcePrefs.edit().putString("source", source).apply()
+        }
+
         // 同步全局播放状态，刷新每行播放/暂停图标
         PlayerController.onPlayStateChanged = { isPlaying ->
             adapter.setPlaying(PlayerController.currentSong?.mid, isPlaying)
@@ -74,11 +91,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun doSearch(keyword: String) {
-        if (!App.api.isLoggedIn()) {
-            Toast.makeText(requireContext(), "请先登录 QQ 音乐后再搜索", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(requireContext(), LoginActivity::class.java))
-            return
-        }
+        if (!ensureLoggedIn(source)) return
         HistoryStore.addSearch(requireContext(), keyword)
         refreshSearchHistory()
         binding.searchHistoryLayout.visibility = View.GONE
@@ -86,7 +99,7 @@ class SearchFragment : Fragment() {
         lifecycleScope.launch {
             val result = try {
                 withContext(Dispatchers.IO) {
-                    App.api.search.searchByType(keyword)
+                    MusicApi.search(source, keyword)
                 }
             } catch (e: Exception) {
                 com.baiji.music.util.AppLog.e("Search", "搜索失败 keyword=$keyword", e)
@@ -102,17 +115,34 @@ class SearchFragment : Fragment() {
         }
     }
 
+    /** 校验音源登录状态；未登录时给出提示并返回 false */
+    private fun ensureLoggedIn(src: String): Boolean {
+        if (MusicApi.isLoggedIn(src)) return true
+        if (src == Source.NETEASE) {
+            Toast.makeText(
+                requireContext(),
+                "请先在「设置」页粘贴网易云 Cookie 登录",
+                Toast.LENGTH_LONG
+            ).show()
+            startActivity(Intent(requireContext(), MainActivity::class.java))
+        } else {
+            Toast.makeText(requireContext(), "请先登录 QQ 音乐后再搜索", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(requireContext(), LoginActivity::class.java))
+        }
+        return false
+    }
+
     /** 行内联播放：点击歌曲行直接播放，不跳转播放器页 */
     private fun playInline(song: Song) {
-        if (!App.api.isLoggedIn()) {
-            Toast.makeText(requireContext(), "请先登录 QQ 音乐", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(requireContext(), LoginActivity::class.java))
-            return
-        }
+        if (!ensureLoggedIn(song.source)) return
         lifecycleScope.launch {
             val url = try {
                 withContext(Dispatchers.IO) {
-                    App.api.song.getPlayUrl(song.mid, PlayerController.currentQuality)
+                    MusicApi.playUrl(
+                        song,
+                        PlayerController.currentQuality,
+                        PlayerController.currentNeteaseQuality,
+                    )
                 }
             } catch (e: Exception) {
                 null
@@ -138,15 +168,13 @@ class SearchFragment : Fragment() {
     }
 
     private fun onDownload(song: Song) {
-        if (!App.api.isLoggedIn()) {
-            Toast.makeText(requireContext(), "下载前请先登录 QQ 音乐", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(requireContext(), LoginActivity::class.java))
-            return
-        }
+        if (!ensureLoggedIn(song.source)) return
         val intent = Intent(requireContext(), DownloadActivity::class.java)
         intent.putExtra("song_mid", song.mid)
+        intent.putExtra("song_id", song.songId)
         intent.putExtra("song_name", song.name)
         intent.putExtra("song_singer", song.singer)
+        intent.putExtra("song_source", song.source)
         startActivity(intent)
     }
 

@@ -55,11 +55,19 @@ class SongAdapter(
                 b.textSub.text = song.singer.ifEmpty { "未知歌手" }
             }
             b.textDuration.text = formatDuration(song.duration)
-            if (song.albumMid.isNotEmpty()) {
+            // 封面：优先使用歌曲自带封面（网易云），否则回退到 QQ 专辑封面
+            val coverUrl = song.cover.ifEmpty {
+                if (song.albumMid.isNotEmpty())
+                    "https://y.qq.com/music/photo_new/T002R300x300M000${song.albumMid}.jpg"
+                else ""
+            }
+            if (coverUrl.isNotEmpty()) {
                 Glide.with(b.root)
-                    .load("https://y.qq.com/music/photo_new/T002R300x300M000${song.albumMid}.jpg")
+                    .load(coverUrl)
                     .placeholder(androidx.core.content.ContextCompat.getDrawable(b.root.context, android.R.drawable.ic_media_play))
                     .into(b.imageCover)
+            } else {
+                Glide.with(b.root).clear(b.imageCover)
             }
             // 播放/暂停图标：当前播放且正在播放 → 暂停；否则 → 播放
             val isThisPlaying = song.mid == playingMid && isPlaying

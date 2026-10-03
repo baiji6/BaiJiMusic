@@ -2,6 +2,7 @@ package com.baiji.music.data
 
 import android.content.Context
 import com.baiji.music.network.Song
+import com.baiji.music.network.Source
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -41,6 +42,7 @@ object PlaylistStore {
                         albumMid = s.optString("albumMid"),
                         duration = s.optLong("duration"),
                         cover = s.optString("cover"),
+                        source = s.optString("source", Source.QQ),
                     )
                     if (song.mid.isNotEmpty()) pl.songs.add(song)
                 }
@@ -67,6 +69,7 @@ object PlaylistStore {
                 so.put("albumMid", s.albumMid)
                 so.put("duration", s.duration)
                 so.put("cover", s.cover)
+                so.put("source", s.source)
                 songs.put(so)
             }
             obj.put("songs", songs)

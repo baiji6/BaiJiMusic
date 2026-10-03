@@ -2,6 +2,7 @@ package com.baiji.music.data
 
 import android.content.Context
 import com.baiji.music.network.Song
+import com.baiji.music.network.Source
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -89,6 +90,7 @@ object HistoryStore {
                     albumMid = o.optString("albumMid"),
                     duration = o.optLong("duration"),
                     cover = o.optString("cover"),
+                    source = o.optString("source", Source.QQ),
                 )
                 if (s.mid.isNotEmpty()) list.add(s)
             }
@@ -108,6 +110,7 @@ object HistoryStore {
             o.put("albumMid", s.albumMid)
             o.put("duration", s.duration)
             o.put("cover", s.cover)
+            o.put("source", s.source)
             arr.put(o)
         }
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

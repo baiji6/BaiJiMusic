@@ -32,6 +32,28 @@
             android:text="@string/search" />
     </LinearLayout>
 
+    <RadioGroup
+        android:id="@+id/sourceGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radioQQ"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/source_qq" />
+
+        <RadioButton
+            android:id="@+id/radioNetease"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/source_netease" />
+    </RadioGroup>
+
     <ProgressBar
         android:id="@+id/progress"
         android:layout_width="wrap_content"

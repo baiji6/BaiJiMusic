@@ -38,6 +38,36 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:text="网易云"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary" />
+
+    <TextView
+        android:id="@+id/textNeteaseState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="未登录（需粘贴网页版 Cookie）"
+        android:textColor="@color/text_secondary" />
+
+    <Button
+        android:id="@+id/btnNeteaseLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="网易云 Cookie 登录" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider"
+        android:layout_marginTop="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="下载设置"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -87,6 +117,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="默认播放音质：MP3 128"
+            android:textColor="@color/text_secondary" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/rowNeteaseQuality"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:id="@+id/textNeteaseQuality"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="网易云默认播放音质：极高 320k"
             android:textColor="@color/text_secondary" />
     </LinearLayout>
 

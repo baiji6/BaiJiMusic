@@ -13,4 +13,6 @@
     <string name="download_location">下载位置</string>
     <string name="change_location">更改位置</string>
     <string name="online_playback">在线播放</string>
+    <string name="source_qq">QQ 音乐</string>
+    <string name="source_netease">网易云</string>
 </resources>

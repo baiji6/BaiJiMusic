@@ -69,6 +69,12 @@ enum class Quality(
     fun inferExt(): String = ext
 }
 
+/** 音源标识 */
+object Source {
+    const val QQ = "qq"
+    const val NETEASE = "netease"
+}
+
 /** 歌曲信息 */
 data class Song(
     val mid: String,
@@ -79,7 +85,11 @@ data class Song(
     val albumMid: String,
     val duration: Long,
     val cover: String,
+    /** 音源：qq / netease */
+    val source: String = Source.QQ,
 ) {
+    val isNetease: Boolean get() = source == Source.NETEASE
+
     companion object {
         fun fromTrack(t: JSONObject): Song {
             val mid = t.optString("mid")

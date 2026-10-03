@@ -5,12 +5,13 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.ui.PlayerView
-import com.baiji.music.App
 import com.baiji.music.R
 import com.baiji.music.databinding.ActivityPlayerBinding
+import com.baiji.music.network.MusicApi
 import com.baiji.music.network.Quality
 import com.baiji.music.network.Song
+import com.baiji.music.network.Source
+import com.baiji.music.network.netease.NeteaseQuality
 import com.baiji.music.player.PlayerController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,9 +20,14 @@ import kotlinx.coroutines.withContext
 class PlayerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPlayerBinding
     private var songMid: String = ""
+    private var songId: Long = 0L
     private var songName: String = ""
     private var songSinger: String = ""
+    private var songSource: String = Source.QQ
     private var currentQuality: Quality = Quality.PLAYBACK_DEFAULT
+    private var currentNeteaseQuality: NeteaseQuality = NeteaseQuality.PLAYBACK_DEFAULT
+
+    private val isNetease get() = songSource == Source.NETEASE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,16 +35,19 @@ class PlayerActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         songMid = intent.getStringExtra("song_mid") ?: ""
+        songId = intent.getLongExtra("song_id", 0L)
         songName = intent.getStringExtra("song_name") ?: ""
         songSinger = intent.getStringExtra("song_singer") ?: ""
+        songSource = intent.getStringExtra("song_source") ?: Source.QQ
 
         // 应用持久化的默认播放音质
         PlayerController.loadDefaultQuality(this)
         currentQuality = PlayerController.currentQuality
+        currentNeteaseQuality = PlayerController.currentNeteaseQuality
 
         binding.textTitle.text = songName
         binding.textSinger.text = songSinger
-        binding.btnQuality.text = "音质：${currentQuality.label}"
+        binding.btnQuality.text = "音质：${currentQualityLabel()}"
 
         binding.btnQuality.setOnClickListener {
             showQualityPicker()
@@ -60,13 +69,18 @@ class PlayerActivity : AppCompatActivity() {
         binding.btnDownload.setOnClickListener {
             val intent = Intent(this, DownloadActivity::class.java)
             intent.putExtra("song_mid", songMid)
+            intent.putExtra("song_id", songId)
             intent.putExtra("song_name", songName)
             intent.putExtra("song_singer", songSinger)
+            intent.putExtra("song_source", songSource)
             startActivity(intent)
         }
 
         loadAndPlay()
     }
+
+    private fun currentQualityLabel(): String =
+        if (isNetease) currentNeteaseQuality.label else currentQuality.label
 
     private fun loadAndPlay() {
         if (songMid.isEmpty()) {
@@ -77,7 +91,11 @@ class PlayerActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val url = try {
                 withContext(Dispatchers.IO) {
-                    App.api.song.getPlayUrl(songMid, currentQuality)
+                    MusicApi.playUrl(
+                        Song(songMid, songId, songName, songSinger, "", "", 0, "", songSource),
+                        currentQuality,
+                        currentNeteaseQuality,
+                    )
                 }
             } catch (e: Exception) {
                 null
@@ -88,27 +106,36 @@ class PlayerActivity : AppCompatActivity() {
             } else {
                 PlayerController.playUrl(this@PlayerActivity, url)
                 // 记录播放历史
-                val song = Song(songMid, 0, songName, songSinger, "", "", 0, "")
+                val song = Song(songMid, songId, songName, songSinger, "", "", 0, "", songSource)
                 com.baiji.music.data.HistoryStore.addPlay(this@PlayerActivity, song)
-                // 显示服务器实际返回的音质，便于用户判断所选音质是否生效
-                val actual = com.baiji.music.network.Quality.fromUrlPrefix(url)
+                // 显示服务器实际返回的音质（仅 QQ 直链可从前缀识别）
+                val actual = if (isNetease) null else Quality.fromUrlPrefix(url)
                 if (actual != null && actual != currentQuality) {
                     binding.btnQuality.text = "音质：${currentQuality.label}（实际 ${actual.label}）"
                 } else {
-                    binding.btnQuality.text = "音质：${currentQuality.label}"
+                    binding.btnQuality.text = "音质：${currentQualityLabel()}"
                 }
             }
         }
     }
 
     private fun showQualityPicker() {
-        val options = Quality.PLAYBACK_OPTIONS.map { it.label }.toTypedArray()
+        val labels = if (isNetease) {
+            NeteaseQuality.PLAYBACK_OPTIONS.map { it.label }
+        } else {
+            Quality.PLAYBACK_OPTIONS.map { it.label }
+        }
         android.app.AlertDialog.Builder(this)
             .setTitle("选择播放音质")
-            .setItems(options) { _, which ->
-                currentQuality = Quality.PLAYBACK_OPTIONS[which]
-                PlayerController.saveDefaultQuality(this, currentQuality)
-                binding.btnQuality.text = "音质：${currentQuality.label}"
+            .setItems(labels.toTypedArray()) { _, which ->
+                if (isNetease) {
+                    currentNeteaseQuality = NeteaseQuality.PLAYBACK_OPTIONS[which]
+                    PlayerController.saveNeteaseQuality(this, currentNeteaseQuality)
+                } else {
+                    currentQuality = Quality.PLAYBACK_OPTIONS[which]
+                    PlayerController.saveDefaultQuality(this, currentQuality)
+                }
+                binding.btnQuality.text = "音质：${currentQualityLabel()}"
                 loadAndPlay()
             }
             .show()
