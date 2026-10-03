@@ -90,16 +90,14 @@ jobs:
       # Release 说明取自仓库根目录 CHANGELOG.md 中与当前标签同名的段落（## v1.1）。
       - name: Extract changelog section for this tag
         if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
           set -e
-          TAG="$GITHUB_REF_NAME"
           echo "tag = $TAG"
-          awk -v tag="$TAG" '
-            substr($0, 1, 3 + length(tag)) == "## " tag { found = 1; next }
-            found && substr($0, 1, 3) == "## " { exit }
-            found && !started && $0 ~ /^[[:space:]]*$/ { next }
-            found { started = 1; print }
-          ' CHANGELOG.md > RELEASE_BODY.md
+          wc -c CHANGELOG.md
+          grep -n '^## ' CHANGELOG.md || true
+          python3 -c 'import os,re,sys;tag=os.environ["TAG"];text=open("CHANGELOG.md",encoding="utf-8",errors="replace").read();m=re.search(r"^##[ \t]+"+re.escape(tag)+r"(?![0-9A-Za-z.])(.*?)(?=^##[ \t]|\Z)",text,re.S|re.M);body=re.sub(r"^\s*[—–-][^\n]*\n","",m.group(1)).strip() if m else "";sys.stdout.write(body+"\n")' > RELEASE_BODY.md
           if [ ! -s RELEASE_BODY.md ]; then
             echo "警告：CHANGELOG.md 中未找到 $TAG 段落，使用兜底说明" >&2
             printf '白姬音乐 %s\n' "$TAG" > RELEASE_BODY.md
