@@ -35,6 +35,7 @@ class LogViewerActivity : AppCompatActivity() {
         binding = ActivityLogViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupLevelSwitches()
         refreshLog()
         binding.btnRefreshLog.setOnClickListener { refreshLog() }
         binding.btnExportLog.setOnClickListener {
@@ -55,10 +56,31 @@ class LogViewerActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
     }
 
+    /** 各档位对应的开关，顺序与 [AppLog.LEVELS] 一致 */
+    private fun levelSwitches(): List<Pair<String, android.widget.CompoundButton>> = listOf(
+        AppLog.TRACE to binding.switchTrace,
+        AppLog.DEBUG to binding.switchDebug,
+        AppLog.INFO to binding.switchInfo,
+        AppLog.WARN to binding.switchWarn,
+        AppLog.ERROR to binding.switchError,
+        AppLog.FATAL to binding.switchFatal,
+    )
+
+    /** 初始化 6 个档位开关：TRACE / DEBUG / INFO / WARN / ERROR / FATAL */
+    private fun setupLevelSwitches() {
+        levelSwitches().forEach { (level, sw) ->
+            sw.isChecked = AppLog.isLevelEnabled(level)
+            sw.setOnCheckedChangeListener { _, checked ->
+                AppLog.setLevelEnabled(level, checked)
+                refreshLog()
+            }
+        }
+    }
+
     private fun refreshLog() {
         val logs = AppLog.snapshot()
         binding.textLog.text = if (logs.isEmpty()) "（暂无日志）" else logs.joinToString("\n")
-        binding.textLogHint.text = "最近日志（共 ${logs.size} 条，新的在前）"
+        binding.textLogHint.text = "最近日志（共 ${logs.size} 条，新的在前，仅显示已开启档位）"
         binding.textLogPath.text = "日志文件：${AppLog.filePath() ?: "（无）"}"
     }
 

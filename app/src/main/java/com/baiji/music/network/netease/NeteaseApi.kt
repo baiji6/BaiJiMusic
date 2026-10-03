@@ -8,7 +8,7 @@ import org.json.JSONObject
 import java.io.IOException
 
 /**
- * 网易云业务接口：搜索、歌曲详情、取流、歌词、专辑、歌单、封面。
+ * 红源业务接口：搜索、歌曲详情、取流、歌词、专辑、歌单、封面。
  * 对应 Python 参考实现（Netease_url）的接口一一移植。
  */
 class NeteaseApi(private val client: NeteaseClient) {
@@ -40,7 +40,7 @@ class NeteaseApi(private val client: NeteaseClient) {
             "total" to "true",
             "csrf_token" to "",
         )
-        AppLog.i(TAG, "网易云搜索 keyword=$keyword limit=$limit offset=$offset")
+        AppLog.i(TAG, "红源搜索 keyword=$keyword limit=$limit offset=$offset")
         val json = client.postApi("${NeteaseClient.API_BASE}/cloudsearch/pc", form)
         val songs = json.optJSONObject("result")?.optJSONArray("songs")
         val result = ArrayList<Song>()
@@ -49,8 +49,45 @@ class NeteaseApi(private val client: NeteaseClient) {
                 toSong(songs.optJSONObject(i))?.let { result.add(it) }
             }
         }
-        AppLog.i(TAG, "网易云搜索结果 keyword=$keyword 命中=${result.size}")
+        AppLog.i(TAG, "红源搜索结果 keyword=$keyword 命中=${result.size}")
         return result
+    }
+
+    /**
+     * 搜索补全建议（页面「相关搜索」）。
+     * 走网页版 suggest 接口，返回歌手名与歌名。
+     */
+    fun suggestions(keyword: String, limit: Int = 8): List<String> {
+        val form = linkedMapOf(
+            "s" to keyword,
+            "limit" to limit.toString(),
+            "csrf_token" to "",
+        )
+        val json = client.postApi("${NeteaseClient.API_BASE}/search/suggest/web", form)
+        val result = json.optJSONObject("result") ?: return emptyList()
+
+        val out = LinkedHashSet<String>()
+        val artists = result.optJSONArray("artists")
+        if (artists != null) {
+            for (i in 0 until artists.length()) {
+                val n = artists.optJSONObject(i)?.optString("name").orEmpty().trim()
+                if (n.isNotEmpty()) out.add(n)
+            }
+        }
+        val songs = result.optJSONArray("songs")
+        if (songs != null) {
+            for (i in 0 until songs.length()) {
+                val o = songs.optJSONObject(i) ?: continue
+                val n = o.optString("name").trim()
+                if (n.isEmpty()) continue
+                // 带上歌手，形如「张杰 逆战」
+                val singer = o.optJSONArray("artists")?.optJSONObject(0)
+                    ?.optString("name").orEmpty().trim()
+                out.add(if (singer.isEmpty()) n else "$singer $n")
+            }
+        }
+        AppLog.i(TAG, "红源相关搜索 keyword=$keyword 命中=${out.size}")
+        return out.take(limit).toList()
     }
 
     // ================= 详情 =================
@@ -95,10 +132,10 @@ class NeteaseApi(private val client: NeteaseClient) {
         payload.put("header", header.toString())
         if (quality == NeteaseQuality.SKY) payload.put("immerseType", "c51")
 
-        AppLog.d(TAG, "网易云取流 id=$id quality=${quality.level}(${quality.label})")
+        AppLog.d(TAG, "红源取流 id=$id quality=${quality.level}(${quality.label})")
         val json = client.postEapi("${NeteaseClient.EAPI_BASE}/song/enhance/player/url/v1", payload)
         if (json.optInt("code") != 200) {
-            throw IOException("网易云取流失败: code=${json.optInt("code")} msg=${json.optString("message")}")
+            throw IOException("红源取流失败: code=${json.optInt("code")} msg=${json.optString("message")}")
         }
         val item = json.optJSONArray("data")?.optJSONObject(0)
             ?: return NeteaseUrl("", quality.ext, quality.level, 0, 0)
@@ -106,7 +143,7 @@ class NeteaseApi(private val client: NeteaseClient) {
         val type = item.optString("type")
         val ext = if (type.isNotEmpty()) ".$type" else quality.ext
         val actualLevel = item.optString("level").ifEmpty { quality.level }
-        AppLog.d(TAG, "网易云取流返回 level=$actualLevel type=$type br=${item.optInt("br")} url_empty=${url.isEmpty()}")
+        AppLog.d(TAG, "红源取流返回 level=$actualLevel type=$type br=${item.optInt("br")} url_empty=${url.isEmpty()}")
         return NeteaseUrl(url, ext, actualLevel, item.optLong("size"), item.optInt("br"))
     }
 
@@ -171,7 +208,7 @@ class NeteaseApi(private val client: NeteaseClient) {
 
     // ================= 映射 =================
 
-    /** 网易云接口 JSON → 通用 [Song]（mid 前缀 ne 以区分来源，songId 保存数字 ID） */
+    /** 红源接口 JSON → 通用 [Song]（mid 前缀 ne 以区分来源，songId 保存数字 ID） */
     private fun toSong(o: JSONObject?): Song? {
         if (o == null) return null
         val id = o.optLong("id")

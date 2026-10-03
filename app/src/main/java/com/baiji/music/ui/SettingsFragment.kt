@@ -57,7 +57,7 @@ class SettingsFragment : Fragment() {
         binding.rowPlaybackQuality.setOnClickListener {
             val options = Quality.PLAYBACK_OPTIONS.map { it.label }.toTypedArray()
             android.app.AlertDialog.Builder(requireContext())
-                .setTitle("QQ 默认播放音质")
+                .setTitle("绿源默认播放音质")
                 .setItems(options) { _, which ->
                     val q = Quality.PLAYBACK_OPTIONS[which]
                     PlayerController.saveDefaultQuality(requireContext(), q)
@@ -71,15 +71,15 @@ class SettingsFragment : Fragment() {
         binding.rowNeteaseQuality.setOnClickListener {
             val options = NeteaseQuality.PLAYBACK_OPTIONS.map { it.label }.toTypedArray()
             android.app.AlertDialog.Builder(requireContext())
-                .setTitle("网易云默认播放音质")
+                .setTitle("红源默认播放音质")
                 .setItems(options) { _, which ->
                     val q = NeteaseQuality.PLAYBACK_OPTIONS[which]
                     PlayerController.saveNeteaseQuality(requireContext(), q)
-                    binding.textNeteaseQuality.text = "网易云默认播放音质：${q.label}"
+                    binding.textNeteaseQuality.text = "红源默认播放音质：${q.label}"
                 }
                 .show()
         }
-        binding.textNeteaseQuality.text = "网易云默认播放音质：${PlayerController.currentNeteaseQuality.label}"
+        binding.textNeteaseQuality.text = "红源默认播放音质：${PlayerController.currentNeteaseQuality.label}"
 
         binding.btnNeteaseLogin.setOnClickListener { onNeteaseLoginClick() }
 
@@ -87,7 +87,7 @@ class SettingsFragment : Fragment() {
             if (App.api.isLoggedIn()) {
                 App.api.logout()
                 binding.textLogin.text = "未登录"
-                binding.btnLogin.text = "QQ 扫码登录"
+                binding.btnLogin.text = "绿源 扫码登录"
             } else {
                 startActivity(Intent(requireContext(), LoginActivity::class.java))
             }
@@ -112,30 +112,30 @@ class SettingsFragment : Fragment() {
             binding.btnLogin.text = "退出登录"
         } else {
             binding.textLogin.text = "未登录"
-            binding.btnLogin.text = "QQ 扫码登录"
+            binding.btnLogin.text = "绿源 扫码登录"
         }
     }
 
     private fun refreshNeteaseLogin() {
         if (App.netease.isLoggedIn()) {
             binding.textNeteaseState.text = "已登录（已保存网页版 Cookie）"
-            binding.btnNeteaseLogin.text = "更新 / 退出网易云登录"
+            binding.btnNeteaseLogin.text = "更新 / 退出红源登录"
         } else {
             binding.textNeteaseState.text = "未登录（需粘贴网页版 Cookie）"
-            binding.btnNeteaseLogin.text = "网易云 Cookie 登录"
+            binding.btnNeteaseLogin.text = "红源 Cookie 登录"
         }
     }
 
     private fun onNeteaseLoginClick() {
         if (App.netease.isLoggedIn()) {
             android.app.AlertDialog.Builder(requireContext())
-                .setTitle("网易云登录")
+                .setTitle("红源登录")
                 .setMessage("当前已登录，是否退出登录？")
                 .setPositiveButton("更新 Cookie") { _, _ -> showNeteaseCookieDialog() }
                 .setNegativeButton("退出登录") { _, _ ->
                     App.netease.logout()
                     refreshNeteaseLogin()
-                    Toast.makeText(requireContext(), "已退出网易云登录", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "已退出红源登录", Toast.LENGTH_SHORT).show()
                 }
                 .setNeutralButton("取消", null)
                 .show()
@@ -146,13 +146,13 @@ class SettingsFragment : Fragment() {
 
     private fun showNeteaseCookieDialog() {
         val input = EditText(requireContext()).apply {
-            hint = "请粘贴网易云网页版 Cookie（需包含 MUSIC_U）"
+            hint = "请粘贴红源网页版 Cookie（需包含 MUSIC_U）"
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE
             minLines = 3
             setPadding(40, 20, 40, 20)
         }
         android.app.AlertDialog.Builder(requireContext())
-            .setTitle("网易云 Cookie 登录")
+            .setTitle("红源 Cookie 登录")
             .setView(input)
             .setPositiveButton("保存") { _, _ ->
                 val cookie = input.text.toString().trim()
@@ -162,7 +162,7 @@ class SettingsFragment : Fragment() {
                 }
                 App.netease.cookie = cookie
                 refreshNeteaseLogin()
-                Toast.makeText(requireContext(), "网易云登录成功", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "红源登录成功", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("取消", null)
             .show()

@@ -6,9 +6,18 @@
     android:orientation="vertical"
     android:padding="12dp">
 
+    <!-- 顶部弹性留白：落地态撑开使搜索框居中，搜索后收起 -->
+    <Space
+        android:id="@+id/spacerTop"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
     <LinearLayout
+        android:id="@+id/searchBarRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:orientation="horizontal">
 
         <EditText
@@ -54,6 +63,145 @@
             android:text="@string/source_netease" />
     </RadioGroup>
 
+    <!-- 输入态：搜索建议下拉列表（白底整行文本，随输入实时刷新） -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerSuggest"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="6dp"
+        android:background="@android:color/white"
+        android:visibility="gone" />
+
+    <!-- 落地态内容：搜索历史 + 最近播放，均可折叠；发起搜索后整体隐藏 -->
+    <ScrollView
+        android:id="@+id/landingScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:layout_marginTop="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/searchHistoryLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/btnToggleSearchHistory"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="▾ 最近搜索"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/btnClearSearchHistory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="清空"
+                        android:textSize="13sp"
+                        android:textColor="@color/primary"
+                        android:padding="6dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/searchHistoryChips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/recentPlayLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="10dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/btnToggleRecentPlay"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="▸ 最近播放"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/btnClearRecentPlay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="清空"
+                        android:textSize="13sp"
+                        android:textColor="@color/primary"
+                        android:padding="6dp" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerRecent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 结果态：相关搜索 -->
+    <LinearLayout
+        android:id="@+id/relatedLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="相关搜索"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_secondary" />
+
+        <LinearLayout
+            android:id="@+id/relatedChips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
     <ProgressBar
         android:id="@+id/progress"
         android:layout_width="wrap_content"
@@ -62,47 +210,6 @@
         android:layout_marginTop="8dp"
         android:visibility="gone" />
 
-    <LinearLayout
-        android:id="@+id/searchHistoryLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="8dp"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="最近搜索"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary" />
-
-            <TextView
-                android:id="@+id/btnClearSearchHistory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="清空"
-                android:textSize="13sp"
-                android:textColor="@color/primary"
-                android:padding="6dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/searchHistoryChips"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:textSize="13sp" />
-    </LinearLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
@@ -110,6 +217,7 @@
         android:layout_weight="1"
         android:layout_marginTop="4dp"
         android:clipToPadding="false"
-        android:paddingBottom="80dp" />
+        android:paddingBottom="80dp"
+        android:visibility="gone" />
 
 </LinearLayout>

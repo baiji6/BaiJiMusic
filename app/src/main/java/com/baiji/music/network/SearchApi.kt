@@ -43,6 +43,55 @@ class SearchApi(private val client: QQMusicClient) {
         return result
     }
 
+    /**
+     * 搜索补全建议（页面「相关搜索」）。
+     * 走公开的 smartbox 接口，无需登录；返回歌手名与歌名，供用户点选后再次搜索。
+     */
+    fun suggestions(keyword: String, num: Int = 8): List<String> {
+        val resp = client.request(
+            method = "GET",
+            url = "https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg",
+            params = mapOf(
+                "is_xml" to "0",
+                "format" to "json",
+                "key" to keyword,
+                "loginUin" to "0",
+                "hostUin" to "0",
+                "inCharset" to "utf8",
+                "outCharset" to "utf-8",
+                "notice" to "0",
+                "platform" to "yqq",
+                "needNewCode" to "0",
+            ),
+            headers = mapOf("Referer" to "https://y.qq.com/portal/player.html"),
+        )
+        if (resp.optInt("code", -1) != 0) return emptyList()
+        val data = resp.optJSONObject("data") ?: return emptyList()
+
+        val out = LinkedHashSet<String>()
+        // 歌手建议（优先展示，作为搜索词更实用）
+        val singers = data.optJSONObject("singer")?.optJSONArray("itemlist")
+        if (singers != null) {
+            for (i in 0 until singers.length()) {
+                val n = singers.optJSONObject(i)?.optString("name").orEmpty().trim()
+                if (n.isNotEmpty()) out.add(n)
+            }
+        }
+        // 歌名建议：带上歌手，形如「张杰 逆战」
+        val songs = data.optJSONObject("song")?.optJSONArray("itemlist")
+        if (songs != null) {
+            for (i in 0 until songs.length()) {
+                val o = songs.optJSONObject(i) ?: continue
+                val n = o.optString("name").trim()
+                val sg = o.optString("singer").trim()
+                if (n.isEmpty()) continue
+                out.add(if (sg.isEmpty()) n else "$sg $n")
+            }
+        }
+        AppLog.i("SearchApi", "相关搜索 keyword=$keyword 命中=${out.size}")
+        return out.take(num).toList()
+    }
+
     /** 综合搜索（反馈展示名称/专辑/歌手） */
     fun generalSearch(keyword: String, page: Int = 1, num: Int = 20): List<Song> {
         val param = JSONObject()

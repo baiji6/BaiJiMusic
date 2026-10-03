@@ -58,6 +58,78 @@
     </LinearLayout>
 
     <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="8dp"
+        android:text="日志档位（关闭后不再记录该档位）"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp">
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchTrace"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="TRACE"
+            android:textSize="11sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchDebug"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="DEBUG"
+            android:textSize="11sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="INFO"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp">
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchWarn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="WARN"
+            android:textSize="11sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchError"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ERROR"
+            android:textSize="11sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchFatal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="FATAL"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <TextView
         android:id="@+id/btnBack"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

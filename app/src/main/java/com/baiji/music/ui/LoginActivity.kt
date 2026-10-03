@@ -32,7 +32,7 @@ class LoginActivity : AppCompatActivity() {
     private fun loginByCookie() {
         val cookie = binding.editCookie.text.toString().trim()
         if (cookie.isEmpty()) {
-            Toast.makeText(this, "请先粘贴 QQ 音乐 Cookie", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "请先粘贴绿源 Cookie", Toast.LENGTH_SHORT).show()
             return
         }
         binding.textStatus.text = "正在使用 Cookie 登录..."

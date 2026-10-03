@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="QQ 扫码登录"
+            android:text="绿源 扫码登录"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary" />
@@ -72,7 +72,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="粘贴 QQ 音乐 Cookie（需含 uin 与 qm_keyst / qqmusic_key）"
+            android:hint="粘贴 绿源 Cookie（需含 uin 与 qm_keyst / qqmusic_key）"
             android:inputType="textMultiLine"
             android:minLines="3"
             android:maxLines="6"

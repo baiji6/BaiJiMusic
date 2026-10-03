@@ -27,6 +27,10 @@ class MyFragment : Fragment() {
     private lateinit var adapter: PlaylistAdapter
     private lateinit var historyAdapter: SongAdapter
 
+    /** 「最近播放」是否展开（可折叠） */
+    private var historyExpanded = true
+    private var historyCount = 0
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -67,6 +71,10 @@ class MyFragment : Fragment() {
         }
 
         binding.btnCreatePlaylist.setOnClickListener { createPlaylist() }
+        binding.btnToggleHistory.setOnClickListener {
+            historyExpanded = !historyExpanded
+            applyHistoryExpanded()
+        }
         binding.btnClearHistory.setOnClickListener {
             HistoryStore.clearPlay(requireContext())
             refreshHistory()
@@ -203,7 +211,7 @@ class MyFragment : Fragment() {
             binding.btnLogin.text = "退出登录"
         } else {
             binding.textState.text = "未登录"
-            binding.btnLogin.text = "QQ 扫码登录"
+            binding.btnLogin.text = "绿源 扫码登录"
         }
         binding.btnLogin.setOnClickListener {
             if (loggedIn) {
@@ -219,9 +227,18 @@ class MyFragment : Fragment() {
 
     private fun refreshHistory() {
         val history = HistoryStore.playHistory(requireContext())
+        historyCount = history.size
         historyAdapter.submit(history)
         binding.textNoHistory.visibility =
             if (history.isEmpty()) View.VISIBLE else View.GONE
+        applyHistoryExpanded()
+    }
+
+    /** 应用「最近播放」折叠状态并同步标题（带数量与箭头） */
+    private fun applyHistoryExpanded() {
+        binding.historyContainer.visibility = if (historyExpanded) View.VISIBLE else View.GONE
+        binding.btnToggleHistory.text =
+            (if (historyExpanded) "▾" else "▸") + " 最近播放（$historyCount）"
     }
 
     private fun refreshPlaylists() {

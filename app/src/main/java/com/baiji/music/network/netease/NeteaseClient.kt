@@ -13,7 +13,7 @@ import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
 /**
- * 网易云 API 客户端。
+ * 红源 API 客户端。
  * HTTP 编排在 Kotlin 层；EAPI 参数加密见 [NeteaseCrypto]。
  * 凭证以网页版 Cookie 形式保存（需包含 MUSIC_U）。
  */
@@ -138,11 +138,11 @@ class NeteaseClient(context: Context) {
             AppLog.e(TAG, "请求异常 $url", e)
             throw e
         }
-        if (text.isBlank()) throw IOException("网易云返回空响应")
+        if (text.isBlank()) throw IOException("红源返回空响应")
         return try {
             JSONObject(text)
         } catch (e: Exception) {
-            throw IOException("网易云响应解析失败: ${text.take(200)}")
+            throw IOException("红源响应解析失败: ${text.take(200)}")
         }
     }
 }
